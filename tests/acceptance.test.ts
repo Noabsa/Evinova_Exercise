@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
 import type { Extractor } from '../src/extract';
+import { FeedbackRecordResponseSchema } from '../src/contract';
 import type { FeedbackContent } from '../src/contract';
 
 type FeedbackApp = ReturnType<typeof createApp>;
@@ -22,6 +23,40 @@ async function listRecords(app: FeedbackApp) {
 }
 
 describe('Feature: Feedback intake', () => {
+  it('Scenario: A valid submission produces a conforming record', async () => {
+    // Given a piece of feedback text
+    // And the model returns content that satisfies the contract
+    const modelContent: FeedbackContent = {
+      category: 'bug',
+      sentiment: 'negative',
+      severity: 'high',
+      summary: '  The export button does nothing on Safari.  ',
+      suggestedAction: '  Reproduce the export flow on Safari and fix the handler.  ',
+    };
+    const extract: Extractor = async () => modelContent;
+    const app = createApp({ extract });
+
+    // When it is submitted
+    const response = await submitFeedback(app, { text: FEEDBACK_TEXT });
+
+    // Then a FeedbackRecord is created — the response parses against the contract or this throws
+    expect(response.status).toBe(201);
+    const { data } = FeedbackRecordResponseSchema.parse(await response.json());
+    const record = data.record;
+
+    // And it has a generated id, a submittedAt timestamp, and status "new"
+    expect(record.id).toMatch(/^fb_/);
+    expect(Number.isNaN(Date.parse(record.submittedAt))).toBe(false);
+    expect(record.status).toBe('new');
+
+    // And every content field is within its allowed values — the parse above rejects
+    // anything outside the enums, so asserting it again here would prove nothing
+
+    // And the content is stored trimmed
+    expect(record.summary).toBe(modelContent.summary.trim());
+    expect(record.suggestedAction).toBe(modelContent.suggestedAction.trim());
+  });
+
   it('Scenario: The model returns content that violates the contract', async () => {
     // Given a piece of feedback text
     // And the model returns content that violates the contract

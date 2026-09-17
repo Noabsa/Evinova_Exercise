@@ -48,6 +48,7 @@ Scenario: A valid submission produces a conforming record
   Then a FeedbackRecord is created
   And it has a generated id, a submittedAt timestamp, and status "new"
   And every content field is within its allowed values
+  And the content is stored trimmed
 
 Scenario: The model returns content that violates the contract
   Given a piece of feedback text
