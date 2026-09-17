@@ -43,17 +43,17 @@ These two scenarios are the specification. The invalid-output scenario is writte
 ```gherkin
 Scenario: A valid submission produces a conforming record
   Given a piece of feedback text
-  When it is submitted
   And the model returns content that satisfies the contract
+  When it is submitted
   Then a FeedbackRecord is created
   And it has a generated id, a submittedAt timestamp, and status "new"
   And every content field is within its allowed values
 
 Scenario: The model returns content that violates the contract
   Given a piece of feedback text
-  When it is submitted
   And the model returns content that violates the contract
+  When it is submitted
   Then the extractor is called exactly twice
   And the invalid output is not stored
-  And the request is rejected with a clear validation error
+  And the request is rejected with a clear extraction error
 ```

@@ -22,8 +22,9 @@ async function listRecords(app: FeedbackApp) {
 }
 
 describe('Feature: Feedback intake', () => {
-  it('Scenario: the model returns content that does not satisfy the contract', async () => {
-    // Given an extractor that returns content violating the contract on every attempt
+  it('Scenario: The model returns content that violates the contract', async () => {
+    // Given a piece of feedback text
+    // And the model returns content that violates the contract
     let extractorCalls = 0;
     const extract: Extractor = async () => {
       extractorCalls += 1;
@@ -38,18 +39,18 @@ describe('Feature: Feedback intake', () => {
     const app = createApp({ extract });
     const recordsBefore = (await listRecords(app)).length;
 
-    // When a client submits valid feedback text
+    // When it is submitted
     const response = await submitFeedback(app, { text: FEEDBACK_TEXT });
 
-    // Then the request is rejected with a clear extraction error
+    // Then the extractor is called exactly twice
+    expect(extractorCalls).toBe(2);
+
+    // And the invalid output is not stored
+    expect(await listRecords(app)).toHaveLength(recordsBefore);
+
+    // And the request is rejected with a clear extraction error
     expect(response.status).toBe(502);
     const errorBody = (await response.json()) as { error?: { code?: string } };
     expect(errorBody.error?.code).toBe('extraction_failed');
-
-    // And the extractor was called twice, one informed retry
-    expect(extractorCalls).toBe(2);
-
-    // And nothing was stored
-    expect(await listRecords(app)).toHaveLength(recordsBefore);
   });
 });
