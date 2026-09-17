@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
-import type { Extractor } from '../src/app';
+import type { Extractor } from '../src/extract';
 import type { FeedbackContent } from '../src/contract';
 
 type FeedbackApp = ReturnType<typeof createApp>;

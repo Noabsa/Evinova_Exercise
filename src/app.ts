@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { ulid } from 'ulid';
-import { SubmitFeedbackRequestSchema } from './contract';
-import type { ErrorCode, FeedbackContent, FeedbackRecord } from './contract';
+import { FeedbackRecordSchema, SubmitFeedbackRequestSchema } from './contract';
+import type { ErrorCode } from './contract';
+import { ExtractionFailedError, extractContent } from './extract';
 import { createStore } from './store';
 
-/** One call in, structured content out. */
-export type Extractor = (text: string) => Promise<FeedbackContent>;
+import type { Extractor } from './extract';
 
 function errorResponse(
   context: Context,
@@ -43,17 +43,28 @@ export function createApp({ extract }: { extract: Extractor }) {
     }
     const { text } = submission.data;
 
-    const extractedContent = await extract(text);
+    let extractedContent;
+    try {
+      extractedContent = await extractContent(extract, text);
+    } catch (error) {
+      if (!(error instanceof ExtractionFailedError)) throw error;
+      return errorResponse(
+        context,
+        502,
+        'extraction_failed',
+        'The model did not return content that satisfies the contract.',
+      );
+    }
 
-    // The four fields below are owned here, never by the model, and a record is
-    // born "new" — there is no transition endpoint.
-    const record: FeedbackRecord = {
+    // The four fields below are set by the service, never by the model, and a
+    // record is born "new" — there is no transition endpoint.
+    const record = FeedbackRecordSchema.parse({
       ...extractedContent,
       id: `fb_${ulid()}`,
       submittedAt: new Date().toISOString(),
       status: 'new',
       text,
-    };
+    });
 
     store.add(record);
     return context.json({ data: { record } }, 201);
