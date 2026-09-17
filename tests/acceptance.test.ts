@@ -69,7 +69,7 @@ describe('Feature: Feedback intake', () => {
         severity: 'high',
         summary: 'Export is broken.',
         suggestedAction: 'Investigate Safari.',
-      } as unknown as FeedbackContent;
+      };
     };
     const app = createApp({ extract });
     const recordsBefore = (await listRecords(app)).length;

@@ -3,10 +3,11 @@ import { FeedbackContentSchema } from './contract';
 import type { FeedbackContent } from './contract';
 
 /**
- * One call in, structured content out. The second argument is only present on a
- * retry: it tells the model why its previous answer was rejected.
+ * One call in, an answer out. The answer is `unknown` because it comes from a
+ * model: only the gate below decides whether it is content. The second argument
+ * is present on a retry and tells the model why its previous answer was rejected.
  */
-export type Extractor = (text: string, previousRejection?: string) => Promise<FeedbackContent>;
+export type Extractor = (text: string, previousRejection?: string) => Promise<unknown>;
 
 /** The model returned something the contract rejects, twice. */
 export class ExtractionFailedError extends Error {}
@@ -16,7 +17,8 @@ function describeIssues(error: ZodError): string {
 }
 
 /**
- * The gate: the model proposes, this decides.
+ * The gate: the model proposes, this decides. It knows nothing about which
+ * provider produced the answer.
  *
  * Structured outputs make invalid output unlikely, not impossible, and the
  * contract — not the provider — is the authority, so every answer is validated.
