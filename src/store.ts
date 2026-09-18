@@ -15,8 +15,9 @@ export function createStore() {
     get(recordId: string): FeedbackRecord | undefined {
       return recordsById.get(recordId);
     },
+    /** Newest first: insertion order is chronological, so reversing it is exact. */
     list(): FeedbackRecord[] {
-      return [...recordsById.values()];
+      return [...recordsById.values()].reverse();
     },
   };
 }
