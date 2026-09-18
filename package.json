@@ -7,6 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "tsx watch --env-file-if-exists=.env server/local.ts",
     "dev:web": "vite",
     "build:web": "vite build",
@@ -34,6 +35,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "aws-cdk": "^2.1141.0",
     "aws-cdk-lib": "^2.269.0",
+    "concurrently": "^10.0.5",
     "constructs": "^10.8.1",
     "esbuild": "^0.28.2",
     "tsx": "^4.23.13",
