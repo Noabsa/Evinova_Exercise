@@ -3,14 +3,14 @@ import type { Context } from 'hono';
 import { ulid } from 'ulid';
 import { FeedbackRecordSchema, SubmitFeedbackRequestSchema } from '../shared/contract';
 import type { ErrorCode } from '../shared/contract';
-import { ExtractionFailedError, extractContent } from './extract';
+import { ExtractionFailedError, ExtractionUnavailableError, extractContent } from './extract';
 import { createStore } from './store';
 
 import type { Extractor } from './extract';
 
 function errorResponse(
   context: Context,
-  status: 400 | 404 | 500 | 502,
+  status: 400 | 404 | 500 | 502 | 503,
   code: ErrorCode,
   message: string,
   details?: unknown,
@@ -47,14 +47,27 @@ export function createApp({ extract }: { extract: Extractor }) {
     try {
       extractedContent = await extractContent(extract, text);
     } catch (error) {
-      if (!(error instanceof ExtractionFailedError)) throw error;
-      console.error(JSON.stringify({ event: 'extraction_rejected', reason: error.message }));
-      return errorResponse(
-        context,
-        502,
-        'extraction_failed',
-        'The model did not return content that satisfies the contract.',
-      );
+      // Answered and was rejected, or never answered at all: different failures,
+      // different statuses, so a caller can tell a retry apart from a dead end.
+      if (error instanceof ExtractionFailedError) {
+        console.error(JSON.stringify({ event: 'extraction_rejected', status: 502, reason: error.message }));
+        return errorResponse(
+          context,
+          502,
+          'extraction_failed',
+          'The model did not return content that satisfies the contract.',
+        );
+      }
+      if (error instanceof ExtractionUnavailableError) {
+        console.error(JSON.stringify({ event: 'extraction_unavailable', status: 503, reason: error.message }));
+        return errorResponse(
+          context,
+          503,
+          'extraction_unavailable',
+          'The model could not be reached. Try again shortly.',
+        );
+      }
+      throw error;
     }
 
     // The four fields below are set by the service, never by the model, and a
@@ -91,7 +104,7 @@ export function createApp({ extract }: { extract: Extractor }) {
    * nothing the model produced can leave through an error.
    */
   app.onError((error, context) => {
-    console.error(JSON.stringify({ event: 'unhandled_error', reason: error.message, stack: error.stack }));
+    console.error(JSON.stringify({ event: 'unhandled_error', status: 500, reason: error.message, stack: error.stack }));
     return errorResponse(context, 500, 'internal_error', 'The service failed to handle the request.');
   });
 

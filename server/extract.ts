@@ -12,6 +12,17 @@ export type Extractor = (text: string, previousRejection?: string) => Promise<un
 /** The model returned something the contract rejects, twice. */
 export class ExtractionFailedError extends Error {}
 
+/** The model never answered: the provider refused, timed out or was unreachable. */
+export class ExtractionUnavailableError extends Error {}
+
+async function ask(extract: Extractor, text: string, previousRejection?: string): Promise<unknown> {
+  try {
+    return await extract(text, previousRejection);
+  } catch (cause) {
+    throw new ExtractionUnavailableError(cause instanceof Error ? cause.message : String(cause));
+  }
+}
+
 function describeIssues(error: ZodError): string {
   return error.issues.map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`).join('; ');
 }
@@ -27,10 +38,10 @@ function describeIssues(error: ZodError): string {
  * coerced into something storable.
  */
 export async function extractContent(extract: Extractor, text: string): Promise<FeedbackContent> {
-  const firstAttempt = FeedbackContentSchema.safeParse(await extract(text));
+  const firstAttempt = FeedbackContentSchema.safeParse(await ask(extract, text));
   if (firstAttempt.success) return firstAttempt.data;
 
-  const retry = FeedbackContentSchema.safeParse(await extract(text, describeIssues(firstAttempt.error)));
+  const retry = FeedbackContentSchema.safeParse(await ask(extract, text, describeIssues(firstAttempt.error)));
   if (retry.success) return retry.data;
 
   throw new ExtractionFailedError(describeIssues(retry.error));
