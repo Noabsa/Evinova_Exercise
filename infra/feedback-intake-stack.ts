@@ -42,7 +42,7 @@ export class FeedbackIntakeStack extends Stack {
       runtime: Runtime.NODEJS_22_X,
       architecture: Architecture.ARM_64,
       memorySize: 512,
-      // Comfortably above the model call's own 20s abort, so the service decides
+      // Comfortably above the model call's own 10s abort, so the service decides
       // the timeout rather than the platform cutting the request short.
       timeout: Duration.seconds(30),
       environment: { ANTHROPIC_SECRET_ARN: modelKey.secretArn },
