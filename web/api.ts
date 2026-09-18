@@ -20,13 +20,22 @@ async function readBody(response: Response): Promise<unknown> {
   );
 }
 
+/** A request that never arrived has no status to report, so it gets its own message. */
+async function call(path: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(path, init);
+  } catch {
+    throw new Error('Could not reach the service. Check your connection and try again.');
+  }
+}
+
 export async function fetchRecords(): Promise<FeedbackRecord[]> {
-  const response = await fetch('/api/feedback');
+  const response = await call('/api/feedback');
   return FeedbackListResponseSchema.parse(await readBody(response)).data.records;
 }
 
 export async function submitFeedback(text: string): Promise<FeedbackRecord> {
-  const response = await fetch('/api/feedback', {
+  const response = await call('/api/feedback', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ text }),
