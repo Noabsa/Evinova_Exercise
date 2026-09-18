@@ -53,6 +53,7 @@ const ErrorCodeSchema = z.enum([
   'invalid_request',
   'not_found',
   'extraction_failed',
+  'internal_error',
 ]);
 
 /**

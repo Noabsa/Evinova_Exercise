@@ -10,7 +10,7 @@ import type { Extractor } from './extract';
 
 function errorResponse(
   context: Context,
-  status: 400 | 404 | 502,
+  status: 400 | 404 | 500 | 502,
   code: ErrorCode,
   message: string,
   details?: unknown,
@@ -48,6 +48,7 @@ export function createApp({ extract }: { extract: Extractor }) {
       extractedContent = await extractContent(extract, text);
     } catch (error) {
       if (!(error instanceof ExtractionFailedError)) throw error;
+      console.error(JSON.stringify({ event: 'extraction_rejected', reason: error.message }));
       return errorResponse(
         context,
         502,
@@ -78,6 +79,20 @@ export function createApp({ extract }: { extract: Extractor }) {
       return errorResponse(context, 404, 'not_found', 'No feedback record with that id.');
     }
     return context.json({ data: { record } });
+  });
+
+  app.notFound((context) =>
+    errorResponse(context, 404, 'not_found', 'No route matches that path.'),
+  );
+
+  /**
+   * Anything that reaches here is a defect, not a caller mistake. The cause is
+   * logged; the response carries a code and nothing else, so no stack trace and
+   * nothing the model produced can leave through an error.
+   */
+  app.onError((error, context) => {
+    console.error(JSON.stringify({ event: 'unhandled_error', reason: error.message, stack: error.stack }));
+    return errorResponse(context, 500, 'internal_error', 'The service failed to handle the request.');
   });
 
   return app;
