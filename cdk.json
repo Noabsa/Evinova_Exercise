@@ -1,0 +1,7 @@
+{
+  "app": "npx tsx infra/app.ts",
+  "context": {
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/aws-iam:minimizePolicies": true
+  }
+}
