@@ -11,9 +11,12 @@ const SYSTEM_PROMPT = [
   'Judge only from the text you are given; never invent detail it does not contain.',
 ].join(' ');
 
-/** The only file that knows which provider answers. Swapping it swaps the model. */
+/** Ten seconds per call, no transport retries: two calls at most, then a 503. */
+const TIMEOUT_MS = 10_000;
+
+
 export function createAnthropicExtractor(apiKey: string): Extractor {
-  const client = new Anthropic({ apiKey });
+  const client = new Anthropic({ apiKey, timeout: TIMEOUT_MS, maxRetries: 0 });
 
   return async (text, previousRejection) => {
     const prompt =
@@ -31,8 +34,7 @@ export function createAnthropicExtractor(apiKey: string): Extractor {
       },
     });
 
-    // Null when the model produced nothing parseable. Returned as-is so the gate
-    // treats it like any other answer the contract rejects.
+    // Null when nothing parseable came back; the gate judges it like any answer.
     return message.parsed_output;
   };
 }
