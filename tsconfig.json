@@ -19,5 +19,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "web", "tests", "infra", "*.config.ts"]
+  "include": ["shared", "server", "web", "tests", "infra", "*.config.ts"]
 }

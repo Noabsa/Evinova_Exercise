@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { createApp } from '../src/app';
-import type { Extractor } from '../src/extract';
-import { FeedbackRecordResponseSchema } from '../src/contract';
-import type { FeedbackContent } from '../src/contract';
+import { createApp } from '../server/app';
+import type { Extractor } from '../server/extract';
+import { FeedbackRecordResponseSchema } from '../shared/contract';
+import type { FeedbackContent } from '../shared/contract';
 
 type FeedbackApp = ReturnType<typeof createApp>;
 

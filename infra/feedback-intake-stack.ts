@@ -37,7 +37,7 @@ export class FeedbackIntakeStack extends Stack {
     const modelKey = Secret.fromSecretNameV2(this, 'ModelKey', 'feedback-intake/anthropic-api-key');
 
     const feedbackApiFunction = new NodejsFunction(this, 'FeedbackApiFunction', {
-      entry: `${stackDirectory}../src/lambda.ts`,
+      entry: `${stackDirectory}../server/lambda.ts`,
       handler: 'handler',
       runtime: Runtime.NODEJS_22_X,
       architecture: Architecture.ARM_64,

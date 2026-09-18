@@ -1,4 +1,4 @@
-import type { FeedbackContent } from './contract';
+import type { FeedbackContent } from '../shared/contract';
 import type { Extractor } from './extract';
 
 /**

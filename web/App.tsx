@@ -17,8 +17,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { MAX_TEXT_LENGTH } from '../src/contract';
-import type { FeedbackRecord } from '../src/contract';
+import { MAX_TEXT_LENGTH } from '../shared/contract';
+import type { FeedbackRecord } from '../shared/contract';
 import { fetchRecords, submitFeedback } from './api';
 
 function countBy(records: FeedbackRecord[], field: 'category' | 'severity'): [string, number][] {

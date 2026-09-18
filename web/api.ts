@@ -2,8 +2,8 @@ import {
   ApiErrorSchema,
   FeedbackListResponseSchema,
   FeedbackRecordResponseSchema,
-} from '../src/contract';
-import type { FeedbackRecord } from '../src/contract';
+} from '../shared/contract';
+import type { FeedbackRecord } from '../shared/contract';
 
 /**
  * The browser is a boundary too: every response is parsed against the same

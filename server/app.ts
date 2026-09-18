@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { ulid } from 'ulid';
-import { FeedbackRecordSchema, SubmitFeedbackRequestSchema } from './contract';
-import type { ErrorCode } from './contract';
+import { FeedbackRecordSchema, SubmitFeedbackRequestSchema } from '../shared/contract';
+import type { ErrorCode } from '../shared/contract';
 import { ExtractionFailedError, extractContent } from './extract';
 import { createStore } from './store';
 

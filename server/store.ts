@@ -1,4 +1,4 @@
-import type { FeedbackRecord } from './contract';
+import type { FeedbackRecord } from '../shared/contract';
 
 /**
  * In-memory store. A factory rather than a module-level Map so each app — and

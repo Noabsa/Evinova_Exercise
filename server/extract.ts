@@ -1,6 +1,6 @@
 import type { ZodError } from 'zod';
-import { FeedbackContentSchema } from './contract';
-import type { FeedbackContent } from './contract';
+import { FeedbackContentSchema } from '../shared/contract';
+import type { FeedbackContent } from '../shared/contract';
 
 /**
  * One call in, an answer out. The answer is `unknown` because it comes from a

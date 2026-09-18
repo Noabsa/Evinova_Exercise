@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
-import { FeedbackContentSchema } from './contract';
+import { FeedbackContentSchema } from '../shared/contract';
 import type { Extractor } from './extract';
 
 const MODEL = 'claude-haiku-4-5';
