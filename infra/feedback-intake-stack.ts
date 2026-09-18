@@ -1,6 +1,6 @@
 import { CfnOutput, Duration, Fn, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import type { StackProps } from 'aws-cdk-lib';
-import { HttpApi } from 'aws-cdk-lib/aws-apigatewayv2';
+import { CfnStage, HttpApi } from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import {
   AllowedMethods,
@@ -59,6 +59,13 @@ export class FeedbackIntakeStack extends Stack {
     const feedbackApi = new HttpApi(this, 'FeedbackApi', {
       defaultIntegration: new HttpLambdaIntegration('FeedbackApiIntegration', feedbackApiFunction),
     });
+
+    // Every submission costs a model call, so the endpoint is capped. The construct
+    // does not expose it, hence the reach into the stage.
+    (feedbackApi.defaultStage?.node.defaultChild as CfnStage).defaultRouteSettings = {
+      throttlingRateLimit: 5,
+      throttlingBurstLimit: 10,
+    };
 
     // Private, reachable only through the distribution. Unlike the logs it is
     // destroyed with the stack: a pipeline publishes here what the repo rebuilds.
